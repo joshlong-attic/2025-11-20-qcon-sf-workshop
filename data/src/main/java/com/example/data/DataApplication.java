@@ -1,10 +1,12 @@
 package com.example.data;
 
+import org.jspecify.annotations.NonNull;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.jdbc.core.dialect.JdbcPostgresDialect;
 import org.springframework.data.repository.CrudRepository;
 
 import java.util.Set;
@@ -17,15 +19,20 @@ public class DataApplication {
     }
 
     @Bean
+    JdbcPostgresDialect postgresDialect() {
+        return JdbcPostgresDialect.INSTANCE;
+    }
+
+    @Bean
     ApplicationRunner runner(CustomerRepository repository) {
         return _ -> repository.findAll().forEach(System.out::println);
     }
 }
 
-interface CustomerRepository extends CrudRepository<Customer, Integer> {
+interface CustomerRepository extends CrudRepository<@NonNull Customer, @NonNull Integer> {
 }
 
-record LineItem(@Id int id, String sku , int customer) {
+record LineItem(@Id int id, String sku, int customer) {
 }
 
 record Customer(@Id int id, String name, Set<LineItem> lineItems) {

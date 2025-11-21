@@ -4,6 +4,8 @@ import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.BeanRegistrar;
+import org.springframework.beans.factory.BeanRegistry;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
@@ -18,13 +20,16 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import org.springframework.context.event.EventListener;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
 import java.util.Arrays;
 
+@Import(MyBeanRegistrar.class)
 @EnableConfigurationProperties(BootifulProperties.class)
 @SpringBootApplication
 public class BeansApplication {
@@ -62,6 +67,22 @@ public class BeansApplication {
 
 }
 
+class MyRunner implements ApplicationRunner {
+
+    @Override
+    public void run(ApplicationArguments args) throws Exception {
+        IO.println("hello, world!");
+    }
+}
+
+class MyBeanRegistrar implements BeanRegistrar {
+
+    @Override
+    public void register(BeanRegistry registry, Environment env) {
+        registry.registerBean(MyRunner.class);
+    }
+}
+
 record CustomerValidatedEvent(String name) {
 }
 
@@ -85,7 +106,7 @@ class ReadyListener implements ApplicationListener<ApplicationReadyEvent> {
 
 @Configuration
 class PropertiesConfiguration {
-    
+
     @Bean
     PropertiesRunner propertiesRunner(BootifulProperties properties) {
         return new PropertiesRunner(properties.name());
